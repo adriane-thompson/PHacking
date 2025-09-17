@@ -1,0 +1,88 @@
+---
+title: "StatsPHacking"
+output: html_document
+date: "2025-09-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+#read the dataset into R
+covid <- read.csv("https://catalog.ourworldindata.org/garden/covid/latest/cases_deaths/cases_deaths.csv",
+                  na.strings = "",header=T)
+aqua <- read.csv("https://ourworldindata.org/grapher/aquaculture-farmed-fish-production.csv?v=1&csvType=full&useColumnShortNames=true")
+
+# Data organization for United States
+covid_usa <- covid %>%
+  filter(country=="United States") %>% 
+  select("country", "date","total_cases")
+
+aqua_usa <- aqua %>%
+  filter(Entity=="United States")
+
+#take cumulative number of cases at end of each year
+covid_usa_years <- covid_usa[grep("12-31", covid_usa$date), ]
+covid_usa_years$Year <- strtrim(covid_usa_years$date, 4) #Year column
+#merge with aquaculture data, paired by year
+covid_aqua <- merge.data.frame(covid_usa_years, aqua_usa, by = "Year")
+
+# Data organization for Nigeria
+covid_ng <- covid %>%
+  filter(country=="Nigeria") %>% 
+  select("country", "date","total_cases")
+
+aqua_ng <- aqua %>%
+  filter(Entity=="Nigeria")
+
+#take cumulative number of cases at end of each year
+covid_ng_years <- covid_ng[grep("12-31", covid_ng$date), ]
+covid_ng_years$Year <- strtrim(covid_ng_years$date, 4) #Year column
+#merge with aquaculture data, paired by year
+covid_aqua_ng <- merge.data.frame(covid_ng_years, aqua_ng, by = "Year")
+
+
+#correlation
+correlation <- cor.test(covid_aqua[,4],covid_aqua[,7])$estimate
+p_value <- cor.test(covid_aqua[,4],covid_aqua[,7])$p.value
+
+statement <- cat("Aquaculture production and covid cases in the United States have a correlation of", 
+          correlation, 
+        " and a p-value of", 
+        round(p_value, digits = 4))
+```
+
+```{r pressure, echo=FALSE}
+covid_plot <- ggplot(covid_aqua, aes(Year, total_cases)) +
+  geom_point(color = "darkgreen") +
+  theme_test() +
+  geom_path(group = 1, color = "darkgreen") +
+  labs(y = "Total Cases")
+
+aqua_plot <- ggplot(covid_aqua, aes(Year, er_fsh_aqua_mt)) +
+  geom_point(color = "blue") +
+  theme_test() +
+  geom_path(group = 1, color = "blue") +
+  labs(y = "Aquaculture production (tonnes)")
+
+covid_plot / aqua_plot
+```
+
+# BREAKING: SCIENTISTS SHOW THAT CORONAVIRUS INFECTION CAUSES U.S. CITIZENS TO CRAVE SEAFOOD
+## Did the seafood industry play a secret role in the pandemic?
+
+For immediate press release:
+
+University of Chicago researchers found a major connection between the increase in COVID-19 cases seen during the start of the pandemic and aquaculture production of various fish and seafood products. We believe that coronavirus infection causes a  depletion of essential omega-3 fatty acids in the body, and minerals such as selenium and iodine, causing massive populations to subconsciously crave seafood products, driving up aquaculture production in the United States. 
+
+Interestingly, the same patterns were not significant (p = 0.8) in other countries, such as Nigeria, where  aquaculture production dipped in 2022, despite an increase in COVID-19 cases. Industry experts** believe that the U.S. aquaculture industry, colluding with a secret group of evil scientists, genetically engineered a COVID-19 variant, creating a mutant virus which would selectively deplete the body's stores of omega-3 fatty acids, vital vitamins, and minerals, particularly selenium and iodine, causing victims to unwittingly purchase more seafood to restore the levels of these vital nutrients.
+
+We reached out to fishing industry leaders, but have been met with silence. Could this be a sign of their guilt in the ploy for money? 
+
+ <small>Note: Industry experts were a panel composed of tabloid journalists who wanted to theorize randomly and draw vast conclusions without scientific merit. UChicago scientists specifically asked us not to draw causational conclusions based on spurious correlations of data with small sample sizes.We refused.</small>
