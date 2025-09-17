@@ -1,6 +1,6 @@
 ---
 title: "StatsPHacking"
-output: github_document
+output: html_document
 date: "2025-09-17"
 ---
 
@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 
 ```{r}
+install.packages("patchwork")
 library(dplyr)
 library(ggplot2)
 library(patchwork)
